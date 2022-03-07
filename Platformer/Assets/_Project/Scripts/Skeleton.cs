@@ -4,68 +4,73 @@ using UnityEngine;
 
 public class Skeleton : MonoBehaviour
 {
-    public float            distance;
-    public float            step;
-    public float            run;
-    public Rigidbody2D      rb;
-    public SpriteRenderer   sr;
-    public BoxCollider2D    Reacted;
-    public Animator         animator;
-    public Hero             SkriptHero;
+    [SerializeField] Rigidbody2D skeletonRigitBody;
+    [SerializeField] SpriteRenderer skeletonSpriteRenderer;
+    [SerializeField] Animator animator;
+    [SerializeField] PlayerCombat PlayerCombatSkript;
 
-    private bool            SwitchAttack_A6 = true;
-    private float           DPS = 1;
-    private string          CurrentAnimation;
-    private float           HP_Scelets = 3;
-    private float           posEnemyX;
-    private bool            SeeEnemy = false;
-    private float           spavnPoint;
+
+    [SerializeField] float distance;
+    [SerializeField] float step;
+    [SerializeField] float run;
+    [SerializeField] int maxHealth = 100;
+    [SerializeField] int damage = 10;
+
+    private int currentHealth;
+    private bool switchAttack_A6 = true;
+    private string currentAnimation;
+    private float posPlayerX;
+    private bool seePlayer = false;
+    private bool isDead= false;
+    private float spavnPoint;
     void Start()
     {
-          spavnPoint = transform.position.x;
+        spavnPoint = transform.position.x;
+        currentHealth = maxHealth;
     }
 
     void FixedUpdate()
     {
-        if (SeeEnemy)
+        if (seePlayer)
         {
-            if (Mathf.Abs(posEnemyX - transform.position.x) <= 1f)
+            if (Mathf.Abs(posPlayerX - transform.position.x) <= 1f)
             {
-                rb.velocity = Vector2.zero;
-                if (posEnemyX - transform.position.x < 0) //игрок слева
+                skeletonRigitBody.velocity = Vector2.zero;
+                if (posPlayerX - transform.position.x < 0) //игрок слева
                 {
-                    sr.flipX = true;
+                    skeletonSpriteRenderer.flipX = true;
                 }
-                else sr.flipX = false;
+                else skeletonSpriteRenderer.flipX = false;
             }
-            /*else if (CurrentAnimation == "Hit")
+            /*else if (currentAnimation == "Hit")
             {
-                rb.velocity = new Vector2(rb.velocity.x /2f, rb.velocity.y)  ;
+                skeletonRigitBody.velocity = new Vector2(skeletonRigitBody.velocity.x /2f, skeletonRigitBody.velocity.y)  ;
             }
             */
             
             
-            else if (posEnemyX - transform.position.x < 0) //игрок слева
+            else if (posPlayerX - transform.position.x < 0) //игрок слева
             {
                 StepOnLeft(run);
-                sr.flipX = true;
+                skeletonSpriteRenderer.flipX = true;
             }
             else
             {
                 StepOnRight(run);// игрок справа
-                sr.flipX = false;
+                skeletonSpriteRenderer.flipX = false;
             }
 
 
             // урон по герою
-            if (sr.sprite.name == "attack-A6" && SwitchAttack_A6)
+            if (skeletonSpriteRenderer.sprite.name == "attack-A6" && switchAttack_A6)
             {
-                SkriptHero.GetDamage(DPS);
-                SwitchAttack_A6 = false;
+                PlayerCombatSkript.TakeDamage(damage);
+                switchAttack_A6 = false;
+                skeletonSpriteRenderer.sortingOrder = 5;
             }
-            if (sr.sprite.name != "attack-A6" && !SwitchAttack_A6)
+            if (skeletonSpriteRenderer.sprite.name != "attack-A6" && !switchAttack_A6)
             {
-                SwitchAttack_A6 = true;
+                switchAttack_A6 = true;
             }
 
 
@@ -73,12 +78,12 @@ public class Skeleton : MonoBehaviour
         else if (transform.position.x <= spavnPoint   )
         {
             StepOnRight(step);
-            sr.flipX = false;
+            skeletonSpriteRenderer.flipX = false;
         }
         else if (transform.position.x > spavnPoint + distance)
         {
             StepOnLeft(step);
-            sr.flipX = true;
+            skeletonSpriteRenderer.flipX = true;
             
         } 
     }
@@ -87,33 +92,53 @@ public class Skeleton : MonoBehaviour
 
     private void StepOnRight(float speed)
     {
-        rb.velocity = ( new Vector2(speed, 0));
+        skeletonRigitBody.velocity = ( new Vector2(speed, 0));
     }
     private void StepOnLeft(float speed)
     {
-        rb.velocity = (new Vector2(-speed, 0));
+        skeletonRigitBody.velocity = (new Vector2(-speed, 0));
     }
 
 
 
-    public void EnemyHere(float posEnemy)
+    public void PlayerHere(float posPlayer)
     {
-        SeeEnemy = true;
-        posEnemyX = posEnemy;
+        seePlayer = true;
+        posPlayerX = posPlayer;
     }
-    public void EnemyLost()
+    public void PlayerLost()
     {
-        SeeEnemy = false;
+        seePlayer = false;
     }
-    
+
     public void ChangeAnimation(string NewAnimation)
     {
-        if (CurrentAnimation != NewAnimation)
+        if (currentAnimation != NewAnimation && !isDead)
         {
 
             animator.Play(NewAnimation);
-            CurrentAnimation = NewAnimation;
+            currentAnimation = NewAnimation;
             
         }
     }
+
+
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        isDead = true;
+        animator.Play("Dead");
+        GetComponent<Collider2D>().enabled = false;
+        this.enabled = false;
+    }
+
 }

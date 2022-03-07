@@ -2,13 +2,17 @@
 using System.Collections;
 
 public class Hero : MonoBehaviour {
-
+    
     [SerializeField] float      m_speed = 4.0f;
     [SerializeField] float      m_jumpForce = 7.5f;
 
     [SerializeField] Vector3    LocalScale;
-    [SerializeField] float      HPHero = 10;
+    
+    [SerializeField] SpriteRenderer sr;
 
+    private bool                IsLeft = true;
+    private float               RealSpeed;
+    
     private Animator            m_animator;
     private Rigidbody2D         m_body2d;
     private Sensor_Bandit       m_groundSensor;
@@ -21,6 +25,8 @@ public class Hero : MonoBehaviour {
         m_animator = GetComponent<Animator>();
         m_body2d = GetComponent<Rigidbody2D>();
         m_groundSensor = transform.Find("GroundSensor").GetComponent<Sensor_Bandit>();
+        
+
     }
 	
 	// Update is called once per frame
@@ -41,13 +47,18 @@ public class Hero : MonoBehaviour {
         float inputX = Input.GetAxis("Horizontal");
 
         // Swap direction of sprite depending on walk direction
-        if (inputX > 0)
+        if (IsLeft == false)
             transform.localScale = new Vector3(-LocalScale.x, LocalScale.y, LocalScale.z);
-        else if (inputX < 0)
+        else if (IsLeft == true)
             transform.localScale = LocalScale;
 
         // Move
-        m_body2d.velocity = new Vector2(inputX * m_speed, m_body2d.velocity.y);
+
+
+        //потом включить
+        //m_body2d.velocity = new Vector2(inputX * m_speed, m_body2d.velocity.y);
+
+        m_body2d.velocity = new Vector2 (RealSpeed, m_body2d.velocity.y);
 
         //Set AirSpeed in animator
         m_animator.SetFloat("AirSpeed", m_body2d.velocity.y);
@@ -68,10 +79,10 @@ public class Hero : MonoBehaviour {
             m_animator.SetTrigger("Hurt");
 
         //Attack
-        else if(Input.GetMouseButtonDown(0)) {
+        /*else if(Input.GetMouseButtonDown(0)) {
             m_animator.SetTrigger("Attack");
         }
-
+        */
         //Change between idle and combat idle
         else if (Input.GetKeyDown("f"))
             m_combatIdle = !m_combatIdle;
@@ -84,7 +95,7 @@ public class Hero : MonoBehaviour {
             m_body2d.velocity = new Vector2(m_body2d.velocity.x, m_jumpForce);
             m_groundSensor.Disable(0.2f);
         }
-
+        /*
         //Run
         else if (Mathf.Abs(inputX) > Mathf.Epsilon)
             m_animator.SetInteger("AnimState", 2);
@@ -96,11 +107,74 @@ public class Hero : MonoBehaviour {
         //Idle
         else
             m_animator.SetInteger("AnimState", 0);
+        */
+
+        else if (m_body2d.velocity.x != 0f)
+            m_animator.SetInteger("AnimState", 2);
+
+        //Combat Idle
+        else if (m_combatIdle)
+            m_animator.SetInteger("AnimState", 1);
+
+        //Idle
+        else
+            m_animator.SetInteger("AnimState", 0);
+        
     }
 
+    
+    
+    
 
-    public void GetDamage(float DPS)
+    //передвижение с помощью кнопок
+    /*
+    public void OnAttackButtomDown()
     {
-        HPHero -= DPS;
+        if (!m_animator.GetCurrentAnimatorStateInfo(0).IsName("Attack") && !m_animator.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
+        {
+            m_animator.SetTrigger("Attack");
+        }
+        
     }
+    */
+    public void OnJumpButtonDown()
+    {
+        if (!m_grounded) return;
+        else
+        {
+            m_animator.SetTrigger("Jump");
+            m_grounded = false;
+            m_animator.SetBool("Grounded", m_grounded);
+            m_body2d.velocity = new Vector2(m_body2d.velocity.x, m_jumpForce);
+            m_groundSensor.Disable(0.2f);
+        }
+    }
+    public void OnLeftButtonDown()
+    {
+        RealSpeed =  -m_speed;
+        IsLeft = true;
+    }
+    public void OnRightButtonDown()
+    {
+        RealSpeed =  m_speed;
+        IsLeft = false;
+    }
+    public void OnLeftAndRightButtonUp()
+    {
+        RealSpeed = 0f;
+    }
+    /*
+    public void HeroGetDamage(GameObject gameObject)
+    {
+        print("OnTriggerStay2D");
+
+        if (//collision.tag=="Foe" &&
+            sr.sprite.name == "LightBandit_22")
+        {
+            print("Attack");
+            Destroy(gameObject);
+        }
+    }
+    */
+    
 }

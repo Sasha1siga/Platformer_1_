@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class PlayerCombat : MonoBehaviour
 {
-    public Animator m_animator;
-    public Transform attackPoint;
-    public LayerMask enemyLayers;
+    [SerializeField] Animator m_animator;
+    [SerializeField] Transform attackPoint;
+    [SerializeField] LayerMask enemyLayers;
 
-    public float attackRange = 0.5f;
-    public int attackDamage = 20;
+    [SerializeField] float attackRange = 0.5f;
+    [SerializeField] int attackDamage = 20;
     [SerializeField] int maxHealth = 100;
 
     private int currentHealth;

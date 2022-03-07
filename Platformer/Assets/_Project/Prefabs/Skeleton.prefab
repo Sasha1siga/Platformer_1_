@@ -317,3 +317,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   skeletonSkript: {fileID: 272105382383895653}
+  spriteRendererrigidSkeleton: {fileID: 272105382383895656}

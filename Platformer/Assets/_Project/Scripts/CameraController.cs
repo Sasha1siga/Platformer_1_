@@ -4,21 +4,23 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public Transform player;
-    private float magicNumber;
-    public Camera cameras;
+    [SerializeField] Transform playerTransform;
+    [SerializeField] Camera cameras;
+
+
+    private float yDistanceCorrector; // чтобы при изменении размера камеры не было проблем с захватом земли в игре 
     private void Start()
     {
-        magicNumber = cameras.orthographicSize - 5;
+        yDistanceCorrector = cameras.orthographicSize - 5;
     }
     private void Update()
     {
-        if (player.position.y < magicNumber - 1f)
+        if (playerTransform.position.y < yDistanceCorrector - 1f)
         {
-            transform.position = new Vector3(player.position.x, magicNumber, transform.position.z);
+            transform.position = new Vector3(playerTransform.position.x, yDistanceCorrector, transform.position.z);
 
         }
-        else transform.position = new Vector3(player.position.x, player.position.y + 1f, transform.position.z) ;
+        else transform.position = new Vector3(playerTransform.position.x, playerTransform.position.y + 1f, transform.position.z) ;
         
     }
 }
