@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerCombat : MonoBehaviour
 {
-    [SerializeField] Animator m_animator;
+    [SerializeField] Animator animatorPlayer;
     [SerializeField] Transform attackPoint;
     [SerializeField] LayerMask enemyLayers;
+    [SerializeField] HealthBar healthBarSkript;
 
     [SerializeField] float attackRange = 0.5f;
     [SerializeField] int attackDamage = 20;
@@ -18,10 +20,11 @@ public class PlayerCombat : MonoBehaviour
     private void Start()
     {
         currentHealth = maxHealth;
+        healthBarSkript.SetMaxHealth(maxHealth);
     }
     public void AttackButtonDown()
     {
-        if (!m_animator.GetCurrentAnimatorStateInfo(0).IsName("Attack") && !m_animator.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
+        if (!animatorPlayer.GetCurrentAnimatorStateInfo(0).IsName("Attack") && !animatorPlayer.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
         {
             Attack();
         }
@@ -31,7 +34,7 @@ public class PlayerCombat : MonoBehaviour
     private void Attack()
     {
         //Play an attack animation
-        m_animator.SetTrigger("Attack");
+        animatorPlayer.SetTrigger("Attack");
 
         // Detectenemies in range of attack
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
@@ -54,7 +57,8 @@ public class PlayerCombat : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        m_animator.SetTrigger("Hurt");
+        animatorPlayer.SetTrigger("Hurt");
+        healthBarSkript.SetHealth(currentHealth);
 
         if (currentHealth <= 0)
         {
@@ -64,9 +68,12 @@ public class PlayerCombat : MonoBehaviour
 
     private void Die()
     {
-        m_animator.SetTrigger("Death");
+        animatorPlayer.SetTrigger("Death");
 
 
         // restart level
     }
+
+    
+      
 }
